@@ -1,1 +1,11 @@
 pyTelegramBotAPI==4.8.0
+sqlalchemy==2.0.23
+mysql-connector-python==8.2.0
+cryptography==41.0.7
+qrcode==7.4.2
+pillow==10.1.0
+requests==2.31.0
+python-dotenv==1.0.0
+mercadopago==2.2.1
+flask==3.0.0
+schedule==1.2.0
