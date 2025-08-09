@@ -15,10 +15,20 @@
    - `DB_USER` (usuário do banco)
    - `DB_PASSWORD` (senha do banco)
    - `TELEGRAM_TOKEN` (seu token do Telegram)
-3. Execute o bot com o comando:
-   ```bash
-   python bot.py
-   ```
+   - `ADMIN_BOT_TOKEN` (token do bot administrativo)
+   - `STORE_BOT_TOKEN` (token do bot da loja)
+   - `ADMIN_IDS` (lista de IDs de administradores, separados por vírgula)
+   - `DATABASE_URL` (string de conexão SQLAlchemy, ex.: `postgresql://user:pass@host:5432/db`)
+
+Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+Para iniciar o bot:
+```bash
+python bot.py
+```
 
 ## Notas
 
