@@ -1,1 +1,15 @@
-pyTelegramBotAPI==4.8.0
+python-telegram-bot==20.7
+mysql-connector-python==8.2.0
+requests==2.31.0
+qrcode==7.4.2
+Pillow==10.1.0
+python-dotenv==1.0.0
+cryptography==41.0.8
+asyncio==3.4.3
+datetime
+json
+hashlib
+base64
+uuid
+threading
+logging
