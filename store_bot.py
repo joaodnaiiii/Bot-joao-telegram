@@ -51,25 +51,25 @@ def get_user_data(telegram_id):
         return MockUser()
 
 def create_main_keyboard():
-    """Create main menu inline keyboard with exact layout"""
+    """Create main menu inline keyboard with EXACT layout as requested"""
     keyboard = types.InlineKeyboardMarkup()
     
-    # First row - Logins | Contas Premium (full width)
+    # First row - Logins | Contas Premium (full width - comprido no meio)
     keyboard.add(types.InlineKeyboardButton("🎮 Logins | Contas Premium", callback_data="services"))
     
-    # Second row - Perfil and Recarga (side by side)
+    # Second row - Perfil (right) and Recarga (left) side by side
     keyboard.row(
-        types.InlineKeyboardButton("👤 Perfil", callback_data="profile"),
-        types.InlineKeyboardButton("💰 Recarga", callback_data="recharge")
+        types.InlineKeyboardButton("💰 Recarga", callback_data="recharge"),
+        types.InlineKeyboardButton("👤 Perfil", callback_data="profile")
     )
     
-    # Third row - Ranking (full width)
+    # Third row - Ranking (full width - comprido)
     keyboard.add(types.InlineKeyboardButton("🏆 Ranking", callback_data="ranking"))
     
-    # Fourth row - Suporte and Informações (side by side)
+    # Fourth row - Suporte (right) and Pesquisar Serviço (left) side by side
     keyboard.row(
-        types.InlineKeyboardButton("🆘 Suporte", callback_data="support"),
-        types.InlineKeyboardButton("🔍 Informações", callback_data="search")
+        types.InlineKeyboardButton("🔍 Pesquisar Serviço", callback_data="search"),
+        types.InlineKeyboardButton("🆘 Suporte", callback_data="support")
     )
     
     return keyboard
@@ -114,28 +114,22 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
 ├💸 Saldo Atual: R${user.balance:.2f}
 ├🪪 Usuário: {message.from_user.first_name or 'N/A'}"""
 
-        # Send text message first
-        bot.send_message(
-            message.chat.id,
-            welcome_text
-        )
-        
-        # Try to send image separately
+        # Send image WITH text as caption (not separate)
         try:
             bot.send_photo(
                 message.chat.id,
-                config.STORE_IMAGE_URL
+                config.STORE_IMAGE_URL,
+                caption=welcome_text,
+                reply_markup=create_main_keyboard()
             )
         except Exception as img_error:
             print(f"Image error: {img_error}")
-            # Continue without image
-        
-        # Send buttons as separate message
-        bot.send_message(
-            message.chat.id,
-            "Escolha uma opção:",
-            reply_markup=create_main_keyboard()
-        )
+            # If image fails, send text with buttons
+            bot.send_message(
+                message.chat.id,
+                welcome_text,
+                reply_markup=create_main_keyboard()
+            )
         
     except Exception as e:
         print(f"Start command error: {e}")
@@ -210,7 +204,6 @@ def show_product_details(call):
         )
     except Exception as e:
         print(f"Product details error: {e}")
-        bot.answer_callback_query(call.id, "Produto carregado!")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_"))
 def process_purchase(call):
@@ -254,7 +247,6 @@ def process_purchase(call):
         
     except Exception as e:
         print(f"Purchase error: {e}")
-        bot.answer_callback_query(call.id, "Processando compra...")
 
 @bot.callback_query_handler(func=lambda call: call.data == "profile")
 def show_profile(call):
@@ -285,7 +277,6 @@ def show_profile(call):
         )
     except Exception as e:
         print(f"Profile error: {e}")
-        bot.answer_callback_query(call.id, "Perfil carregado!")
 
 @bot.callback_query_handler(func=lambda call: call.data == "purchase_history")
 def show_purchase_history(call):
@@ -323,7 +314,6 @@ def show_recharge_menu(call):
         )
     except Exception as e:
         print(f"Recharge error: {e}")
-        bot.answer_callback_query(call.id, "Menu de recarga!")
 
 @bot.callback_query_handler(func=lambda call: call.data == "pushinpay")
 def request_recharge_amount(call):
@@ -533,16 +523,12 @@ def show_balance_ranking(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == "support")
 def show_support(call):
-    # Redirect to support username
-    bot.answer_callback_query(call.id, f"Redirecionando para o suporte: {config.SUPPORT_USERNAME}")
-    
+    # Direct redirect to support
     text = f"""🆘 **SUPORTE TÉCNICO**
 
 📞 Entre em contato conosco:
 
 💬 Telegram: {config.SUPPORT_USERNAME}
-📧 Email: suporte@joazinhostore.com
-⏰ Horário: 24/7
 
 🚀 Resposta rápida garantida!"""
 
@@ -637,19 +623,29 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
 ℹ️ Seus Dados:
 ├🆔 ID: {user.telegram_id}
 ├💸 Saldo Atual: R${user.balance:.2f}
-├🪪 Usuário: {call.from_user.first_name or 'N/A'}
+├🪪 Usuário: {call.from_user.first_name or 'N/A'}"""
 
-Escolha uma opção:"""
-
-        bot.edit_message_text(
-            welcome_text,
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=create_main_keyboard()
-        )
+        # Try to edit with photo
+        try:
+            bot.edit_message_media(
+                types.InputMediaPhoto(
+                    config.STORE_IMAGE_URL,
+                    caption=welcome_text
+                ),
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=create_main_keyboard()
+            )
+        except:
+            # If can't edit with photo, edit text only
+            bot.edit_message_text(
+                welcome_text,
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=create_main_keyboard()
+            )
     except Exception as e:
         print(f"Callback start error: {e}")
-        bot.answer_callback_query(call.id, "Menu principal!")
 
 # Command handlers for menu commands
 @bot.message_handler(commands=['pix'])
@@ -806,7 +802,7 @@ O Desenvolvedor não se responsabiliza pelos produtos comercializados no aplicat
 
 Ao prosseguir com a utilização dos serviços, o Usuário manifesta sua concordância com os Termos estabelecidos. Para uma visão abrangente, acesse a versão completa em {config.TERMS_URL}.
 
-Atenciosamente, Joazinho Store"""
+Atenciosamente, {config.STORE_NAME}"""
         
         bot.send_message(message.chat.id, text)
     except Exception as e:
@@ -848,7 +844,11 @@ def toggle_alert(call):
 @bot.callback_query_handler(func=lambda call: True)
 def handle_other_callbacks(call):
     try:
-        bot.answer_callback_query(call.id, "Processando...")
+        # Instead of "development" messages, provide helpful responses
+        if call.data.startswith("check_payment_"):
+            bot.answer_callback_query(call.id, "Verificando pagamento...")
+        else:
+            bot.answer_callback_query(call.id, "Processando...")
     except:
         pass
 
