@@ -23,8 +23,9 @@ MIN_RECHARGE = 2.00
 MAX_RECHARGE = 1000.00
 PIX_EXPIRY_MINUTES = 10
 
-# Admin Configuration
-ADMIN_IDS = [123456789]  # Replace with actual admin user IDs
+# Admin Configuration - ADD YOUR TELEGRAM USER ID HERE
+ADMIN_IDS = [123456789, 987654321]  # Replace with actual admin user IDs
+
 ADMIN_DASHBOARD_EXPIRY = "26/11/2074"
 SOFTWARE_VERSION = "V4.1.0"
 

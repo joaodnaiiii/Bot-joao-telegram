@@ -71,11 +71,11 @@ def get_admin_stats():
 def create_admin_main_keyboard():
     """Create admin main menu keyboard"""
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("⚙️ CONFIGURAÇÕES", callback_data="admin_config"),
         types.InlineKeyboardButton("🎬 AÇÕES", callback_data="admin_actions")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("💳 TRANSAÇÕES", callback_data="admin_transactions"),
         types.InlineKeyboardButton("🔄 ATUALIZAÇÕES", callback_data="admin_updates")
     )
@@ -100,10 +100,11 @@ def admin_command(message):
 
 def show_admin_dashboard(message):
     """Show admin dashboard"""
-    stats = get_admin_stats()
-    days_left = (datetime.strptime(config.ADMIN_DASHBOARD_EXPIRY, "%d/%m/%Y") - datetime.now()).days
-    
-    text = f"""DASHBOARD @{message.from_user.username or message.from_user.first_name}
+    try:
+        stats = get_admin_stats()
+        days_left = (datetime.strptime(config.ADMIN_DASHBOARD_EXPIRY, "%d/%m/%Y") - datetime.now()).days
+        
+        text = f"""DASHBOARD @{message.from_user.username or message.from_user.first_name}
 一米
 Vencimento: {config.ADMIN_DASHBOARD_EXPIRY} (Faltam {days_left} dias!)
 Vip: Não
@@ -118,13 +119,18 @@ Vendas total: {stats['total_sales']}
 Vendas hoje: {stats['today_sales']}
 Use os botões abaixo para me configurar"""
 
-    keyboard = create_admin_main_keyboard()
-    
-    bot.send_message(
-        message.chat.id,
-        text,
-        reply_markup=keyboard
-    )
+        keyboard = create_admin_main_keyboard()
+        
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=keyboard
+        )
+    except Exception as e:
+        bot.send_message(
+            message.chat.id,
+            f"❌ Erro ao carregar dashboard: {str(e)}\n\n⚠️ Certifique-se de que o banco de dados está configurado corretamente."
+        )
 
 @bot.callback_query_handler(func=lambda call: call.data == "admin_config")
 def show_config_menu(call):
@@ -296,11 +302,12 @@ BÔNUS: R${admin_settings['min_bonus_deposit']:.2f}"""
 @bot.callback_query_handler(func=lambda call: call.data == "config_logins")
 def show_login_config(call):
     # Get total logins in stock
-    db = SessionLocal()
     try:
+        db = SessionLocal()
         total_logins = db.query(Account).filter(Account.is_sold == False).count()
-    finally:
         db.close()
+    except:
+        total_logins = 0
     
     text = f"""LOGINS NO ESTOQUE: {total_logins}
 一米-
@@ -443,10 +450,11 @@ Gerencie atualizações do sistema:"""
 # Back to main menu
 @bot.callback_query_handler(func=lambda call: call.data == "back_main")
 def back_to_main_admin(call):
-    stats = get_admin_stats()
-    days_left = (datetime.strptime(config.ADMIN_DASHBOARD_EXPIRY, "%d/%m/%Y") - datetime.now()).days
-    
-    text = f"""DASHBOARD @{call.from_user.username or call.from_user.first_name}
+    try:
+        stats = get_admin_stats()
+        days_left = (datetime.strptime(config.ADMIN_DASHBOARD_EXPIRY, "%d/%m/%Y") - datetime.now()).days
+        
+        text = f"""DASHBOARD @{call.from_user.username or call.from_user.first_name}
 一米
 Vencimento: {config.ADMIN_DASHBOARD_EXPIRY} (Faltam {days_left} dias!)
 Vip: Não
@@ -461,14 +469,16 @@ Vendas total: {stats['total_sales']}
 Vendas hoje: {stats['today_sales']}
 Use os botões abaixo para me configurar"""
 
-    keyboard = create_admin_main_keyboard()
-    
-    bot.edit_message_text(
-        text,
-        call.message.chat.id,
-        call.message.message_id,
-        reply_markup=keyboard
-    )
+        keyboard = create_admin_main_keyboard()
+        
+        bot.edit_message_text(
+            text,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboard
+        )
+    except Exception as e:
+        bot.answer_callback_query(call.id, f"Erro: {str(e)}", show_alert=True)
 
 # Handle admin settings changes
 @bot.callback_query_handler(func=lambda call: call.data == "change_support")
@@ -508,8 +518,8 @@ Netflix Premium{config.ADMIN_SEPARATOR}15.00{config.ADMIN_SEPARATOR}Conta Netfli
 
 @bot.callback_query_handler(func=lambda call: call.data == "detailed_stock")
 def show_detailed_stock(call):
-    db = SessionLocal()
     try:
+        db = SessionLocal()
         services = db.query(Service).all()
         
         if not services:
@@ -522,8 +532,9 @@ def show_detailed_stock(call):
                     Account.is_sold == False
                 ).count()
                 text += f"🎯 {service.name}\n💰 R${service.price:.2f}\n📦 Estoque: {available_accounts}\n\n"
-    finally:
         db.close()
+    except Exception as e:
+        text = f"❌ Erro ao carregar estoque: {str(e)}"
     
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton("⬅️ VOLTAR", callback_data="config_logins"))
@@ -636,6 +647,17 @@ def handle_other_callbacks(call):
     response = responses.get(call.data, "⚠️ Funcionalidade em desenvolvimento")
     bot.answer_callback_query(call.id, response, show_alert=True)
 
+# Error handler
+@bot.message_handler(func=lambda message: True)
+def handle_all_messages(message):
+    if not is_admin(message.from_user.id):
+        bot.reply_to(message, "❌ Você não tem permissão para usar este bot.\n\n💡 Use /admin para acessar o painel administrativo (apenas para administradores).")
+        return
+    
+    bot.reply_to(message, "👨‍💼 Use /admin para acessar o painel administrativo.")
+
 if __name__ == "__main__":
     print("Admin bot started...")
+    print(f"Admin IDs configurados: {config.ADMIN_IDS}")
+    print("Para acessar o admin, adicione seu Telegram ID na lista ADMIN_IDS em config.py")
     bot.polling(none_stop=True)

@@ -43,14 +43,14 @@ def get_user_data(telegram_id):
         db.close()
 
 def create_main_keyboard():
-    """Create main menu keyboard"""
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    """Create main menu inline keyboard"""
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
     
     # First row - Logins | Contas Premium (full width)
     keyboard.add(types.InlineKeyboardButton("🎮 Logins | Contas Premium", callback_data="services"))
     
-    # Second row - Perfil and Recarga
-    keyboard.add(
+    # Second row - Perfil and Recarga (side by side)
+    keyboard.row(
         types.InlineKeyboardButton("👤 Perfil", callback_data="profile"),
         types.InlineKeyboardButton("💰 Recarga", callback_data="recharge")
     )
@@ -58,17 +58,35 @@ def create_main_keyboard():
     # Third row - Ranking (full width)
     keyboard.add(types.InlineKeyboardButton("🏆 Ranking", callback_data="ranking"))
     
-    # Fourth row - Suporte and Pesquisar Serviço
-    keyboard.add(
+    # Fourth row - Suporte and Pesquisar Serviço (side by side)
+    keyboard.row(
         types.InlineKeyboardButton("🆘 Suporte", callback_data="support"),
         types.InlineKeyboardButton("🔍 Pesquisar Serviço", callback_data="search")
     )
     
     return keyboard
 
+def create_menu_commands():
+    """Create menu commands that appear at bottom"""
+    commands = [
+        types.BotCommand("start", "🏠 Iniciar bot"),
+        types.BotCommand("pix", "💳 Gera um pix para adicionar saldo no bot"),
+        types.BotCommand("historico", "📊 Suas compras"),
+        types.BotCommand("afiliados", "💰 Ganhe saldo indicando o bot"),
+        types.BotCommand("id", "🆔 Exibe seu identificador"),
+        types.BotCommand("saldo", "💸 Exibe seu saldo no bot"),
+        types.BotCommand("ranking", "🏆 Ranking de usuários do bot"),
+        types.BotCommand("termos", "📋 Mostra os termos de uso"),
+        types.BotCommand("alertas", "🔔 Seja avisado de cada conta abastecida")
+    ]
+    bot.set_my_commands(commands)
+
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user = get_user_data(message.from_user.id)
+    
+    # Set menu commands
+    create_menu_commands()
     
     welcome_text = f"""🥇 Descubra como nosso bot pode transformar sua experiência de compras! Ele facilita a busca por diversos produtos e serviços, garantindo que você encontre o que precisa com o melhor preço e excelente custo-benefício.
 
@@ -85,21 +103,21 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
 ├🪪 Usuário: {message.from_user.first_name or 'N/A'}"""
 
     try:
-        # Send image first
+        # Send image with inline keyboard
         bot.send_photo(
             message.chat.id,
             config.STORE_IMAGE_URL,
             caption=welcome_text,
             reply_markup=create_main_keyboard(),
-            parse_mode='Markdown'
+            parse_mode='HTML'
         )
     except:
-        # If image fails, send text only
+        # If image fails, send text with inline keyboard
         bot.send_message(
             message.chat.id,
             welcome_text,
             reply_markup=create_main_keyboard(),
-            parse_mode='Markdown'
+            parse_mode='HTML'
         )
 
 @bot.callback_query_handler(func=lambda call: call.data == "services")
@@ -111,7 +129,7 @@ def show_services(call):
 🏦 Carteira
 └ 💸 Saldo Atual: R${user.balance:.2f}"""
 
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
     
     # Add products
     for i, product in enumerate(SAMPLE_PRODUCTS):
@@ -381,18 +399,7 @@ Se você utilizá-lo mais de uma vez, o saldo adicional será perdido sem direit
 
 @bot.callback_query_handler(func=lambda call: call.data == "ranking")
 def show_ranking_menu(call):
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
-        types.InlineKeyboardButton("🎯 Serviços", callback_data="rank_services"),
-        types.InlineKeyboardButton("💰 Recargas", callback_data="rank_recharges")
-    )
-    keyboard.add(
-        types.InlineKeyboardButton("🛒 Compras", callback_data="rank_purchases"),
-        types.InlineKeyboardButton("💳 Saldo", callback_data="rank_balance")
-    )
-    keyboard.add(types.InlineKeyboardButton("⬅️ Voltar", callback_data="back_main"))
-    
-    # Show services ranking by default
+    # Show services ranking by default with buttons
     show_services_ranking(call)
 
 @bot.callback_query_handler(func=lambda call: call.data == "rank_services")
@@ -411,11 +418,11 @@ def show_services_ranking(call):
 10°) Grupos vips +30 links +18 (acesso) - Com 19 pedidos"""
 
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🎯 Serviços ✅", callback_data="rank_services"),
         types.InlineKeyboardButton("💰 Recargas", callback_data="rank_recharges")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🛒 Compras", callback_data="rank_purchases"),
         types.InlineKeyboardButton("💳 Saldo", callback_data="rank_balance")
     )
@@ -444,11 +451,11 @@ def show_recharges_ranking(call):
 10°) King Vendas - Com R$22,00 em recargas"""
 
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🎯 Serviços", callback_data="rank_services"),
         types.InlineKeyboardButton("💰 Recargas ✅", callback_data="rank_recharges")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🛒 Compras", callback_data="rank_purchases"),
         types.InlineKeyboardButton("💳 Saldo", callback_data="rank_balance")
     )
@@ -477,11 +484,11 @@ def show_purchases_ranking(call):
 10°) lena - Com 4 compras"""
 
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🎯 Serviços", callback_data="rank_services"),
         types.InlineKeyboardButton("💰 Recargas", callback_data="rank_recharges")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🛒 Compras ✅", callback_data="rank_purchases"),
         types.InlineKeyboardButton("💳 Saldo", callback_data="rank_balance")
     )
@@ -510,11 +517,11 @@ def show_balance_ranking(call):
 10°) Marcele - Com R$63,00 de saldo"""
 
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🎯 Serviços", callback_data="rank_services"),
         types.InlineKeyboardButton("💰 Recargas", callback_data="rank_recharges")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🛒 Compras", callback_data="rank_purchases"),
         types.InlineKeyboardButton("💳 Saldo ✅", callback_data="rank_balance")
     )
@@ -634,7 +641,7 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
             call.message.chat.id,
             call.message.message_id,
             reply_markup=create_main_keyboard(),
-            parse_mode='Markdown'
+            parse_mode='HTML'
         )
     except:
         bot.edit_message_text(
@@ -642,7 +649,7 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
             call.message.chat.id,
             call.message.message_id,
             reply_markup=create_main_keyboard(),
-            parse_mode='Markdown'
+            parse_mode='HTML'
         )
 
 # Command handlers for menu commands
@@ -758,13 +765,13 @@ def balance_command(message):
 
 @bot.message_handler(commands=['ranking'])
 def ranking_command(message):
-    # Send ranking menu as message
+    # Send ranking menu as message with inline keyboard
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(
-        types.InlineKeyboardButton("🎯 Serviços", callback_data="rank_services"),
+    keyboard.row(
+        types.InlineKeyboardButton("🎯 Serviços ✅", callback_data="rank_services"),
         types.InlineKeyboardButton("💰 Recargas", callback_data="rank_recharges")
     )
-    keyboard.add(
+    keyboard.row(
         types.InlineKeyboardButton("🛒 Compras", callback_data="rank_purchases"),
         types.InlineKeyboardButton("💳 Saldo", callback_data="rank_balance")
     )
