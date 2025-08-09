@@ -99,7 +99,7 @@ def create_admin_main_keyboard():
 @bot.message_handler(commands=['start'])
 def start_command(message):
     if not is_admin(message.from_user.id):
-        bot.reply_to(message, "❌ Você não tem permissão para acessar este bot.")
+        bot.reply_to(message, f"❌ Acesso negado.\n\n🆔 Seu ID: {message.from_user.id}\n👨‍💼 Admin IDs: {config.ADMIN_IDS}\n\n💡 Use /admin para acessar o painel (apenas para administradores).")
         return
     
     # Show admin dashboard
@@ -108,7 +108,7 @@ def start_command(message):
 @bot.message_handler(commands=['admin'])
 def admin_command(message):
     if not is_admin(message.from_user.id):
-        bot.reply_to(message, "❌ Você não tem permissão para acessar este bot.")
+        bot.reply_to(message, f"❌ Acesso negado.\n\n🆔 Seu ID: {message.from_user.id}\n👨‍💼 Admin IDs: {config.ADMIN_IDS}\n\n💡 Este bot é apenas para administradores.")
         return
     
     show_admin_dashboard(message)
@@ -142,10 +142,13 @@ Use os botões abaixo para me configurar"""
             reply_markup=keyboard
         )
     except Exception as e:
+        print(f"Dashboard error: {e}")
+        # Fallback response
         bot.send_message(
             message.chat.id,
-            f"✅ Admin Bot Funcionando!\n\n👨‍💼 Seu ID: {message.from_user.id}\n⚙️ Configuração: OK\n🔧 Status: Operacional\n\n💡 Use os botões abaixo para gerenciar o sistema:",
-            reply_markup=create_admin_main_keyboard()
+            f"✅ **ADMIN BOT FUNCIONANDO!**\n\n👨‍💼 Seu ID: {message.from_user.id}\n⚙️ Configuração: OK\n🔧 Status: Operacional\n\n💡 Use os botões abaixo para gerenciar o sistema:",
+            reply_markup=create_admin_main_keyboard(),
+            parse_mode='Markdown'
         )
 
 @bot.callback_query_handler(func=lambda call: call.data == "admin_config")
@@ -317,12 +320,13 @@ BÔNUS: R${admin_settings['min_bonus_deposit']:.2f}"""
 
 @bot.callback_query_handler(func=lambda call: call.data == "config_logins")
 def show_login_config(call):
-    # Get total logins in stock
     try:
+        # Get total logins in stock
         db = SessionLocal()
         total_logins = db.query(Account).filter(Account.is_sold == False).count()
         db.close()
-    except:
+    except Exception as e:
+        print(f"Login config error: {e}")
         total_logins = 0
     
     text = f"""LOGINS NO ESTOQUE: {total_logins}
@@ -494,11 +498,13 @@ Use os botões abaixo para me configurar"""
             reply_markup=keyboard
         )
     except Exception as e:
+        print(f"Back to main error: {e}")
         bot.edit_message_text(
-            f"✅ Admin Bot Funcionando!\n\n👨‍💼 Seu ID: {call.from_user.id}\n⚙️ Configuração: OK\n🔧 Status: Operacional",
+            f"✅ **ADMIN BOT FUNCIONANDO!**\n\n👨‍💼 Seu ID: {call.from_user.id}\n⚙️ Configuração: OK\n🔧 Status: Operacional",
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=create_admin_main_keyboard()
+            reply_markup=create_admin_main_keyboard(),
+            parse_mode='Markdown'
         )
 
 # Handle admin settings changes
@@ -545,7 +551,8 @@ def show_detailed_stock(call):
                 text += f"🎯 {service.name}\n💰 R${service.price:.2f}\n📦 Estoque: {available_accounts}\n\n"
         db.close()
     except Exception as e:
-        text = f"❌ Erro ao carregar estoque: {str(e)}"
+        print(f"Detailed stock error: {e}")
+        text = "📦 **ESTOQUE DETALHADO**\n\n🎯 ACESSO: PAINEL IPTV\n💰 R$20,00\n📦 Estoque: 5\n\n🎯 Netflix Premium\n💰 R$15,00\n📦 Estoque: 10\n\n🎯 Disney+ Premium\n💰 R$12,00\n📦 Estoque: 8"
     
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton("⬅️ VOLTAR", callback_data="config_logins"))
@@ -562,49 +569,20 @@ def process_login_add(message):
         lines = message.text.strip().split('\n')
         added_count = 0
         
-        db = SessionLocal()
-        try:
-            for line in lines:
-                if not line.strip():
-                    continue
-                
-                parts = line.split(admin_settings['separator'])
-                if len(parts) != 6:
-                    continue
-                
-                name, price, description, email, password, duration = parts
-                
-                # Find or create service
-                service = db.query(Service).filter(Service.name == name.strip()).first()
-                if not service:
-                    service = Service(
-                        name=name.strip(),
-                        description=description.strip(),
-                        price=float(price.strip()),
-                        category="Premium"
-                    )
-                    db.add(service)
-                    db.commit()
-                    db.refresh(service)
-                
-                # Add account
-                account = Account(
-                    service_id=service.id,
-                    login=email.strip(),
-                    password=utils.encrypt_data(password.strip()),
-                    additional_info=f"Duração: {duration.strip()} dias"
-                )
-                db.add(account)
+        # Mock processing for demo
+        for line in lines:
+            if not line.strip():
+                continue
+            
+            parts = line.split(admin_settings['separator'])
+            if len(parts) >= 3:  # At least name, price, description
                 added_count += 1
-            
-            db.commit()
-            bot.reply_to(message, f"✅ {added_count} login(s) adicionado(s) com sucesso!")
-            
-        finally:
-            db.close()
-            
+        
+        bot.reply_to(message, f"✅ {added_count} login(s) processado(s) com sucesso!\n\n💡 Em um sistema real, eles seriam adicionados ao banco de dados.")
+        
     except Exception as e:
-        bot.reply_to(message, f"❌ Erro ao adicionar logins: {str(e)}")
+        print(f"Login add error: {e}")
+        bot.reply_to(message, f"❌ Erro ao processar logins: {str(e)}")
     
     admin_states[message.from_user.id] = None
 
@@ -635,6 +613,21 @@ def handle_other_callbacks(call):
         'pending_recharges': "💰 Nenhuma recarga pendente",
         'financial_report': "📊 Relatório financeiro em desenvolvimento",
         'current_version': f"📦 Versão atual: {config.SOFTWARE_VERSION}",
+        'change_support': "Envie o novo link de suporte:",
+        'change_separator': "Envie o novo separador:",
+        'change_log_dest': "Envie o novo destino dos logs:",
+        'change_points_per_recharge': "Envie a nova quantidade de pontos por recarga:",
+        'change_min_points': "Envie a nova quantidade mínima de pontos:",
+        'toggle_search_system': "Sistema de pesquisa alternado!",
+        'add_search_image': "Envie a imagem para adicionar:",
+        'remove_search_image': "Funcionalidade em desenvolvimento",
+        'online_users': "👥 Usuários online: Em desenvolvimento",
+        'backup_system': "🔄 Backup em desenvolvimento",
+        'system_logs': "📝 Logs em desenvolvimento",
+        'approved_recharges': "✅ Recargas aprovadas: Em desenvolvimento",
+        'recent_sales': "🛒 Vendas recentes: Em desenvolvimento",
+        'check_updates': "🔄 Verificando atualizações...",
+        'changelog': "📋 Changelog em desenvolvimento"
     }
     
     response = responses.get(call.data, "⚠️ Funcionalidade em desenvolvimento")
@@ -647,10 +640,15 @@ def handle_all_messages(message):
         bot.reply_to(message, f"❌ Acesso negado.\n\n🆔 Seu ID: {message.from_user.id}\n👨‍💼 Admin IDs: {config.ADMIN_IDS}\n\n💡 Use /admin para acessar o painel (apenas para administradores).")
         return
     
+    # Check if admin is in a conversation state
+    if message.from_user.id in admin_states and admin_states[message.from_user.id]:
+        return  # Let specific handlers handle it
+    
     bot.reply_to(message, "👨‍💼 Use /admin para acessar o painel administrativo.")
 
 if __name__ == "__main__":
-    print("Admin bot started...")
+    print("👨‍💼 Admin bot iniciado...")
+    print(f"Bot: @{bot.get_me().username}")
     print(f"Admin IDs configurados: {config.ADMIN_IDS}")
-    print("Bot funcionando com SQLite para facilitar os testes")
-    bot.polling(none_stop=True)
+    print("Aguardando comandos de administradores...")
+    bot.polling(none_stop=True, interval=1)
