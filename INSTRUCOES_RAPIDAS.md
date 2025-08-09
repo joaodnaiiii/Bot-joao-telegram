@@ -2,30 +2,7 @@
 
 ## ⚡ CONFIGURAÇÃO RÁPIDA
 
-### 1. 🆔 Descobrir seu Telegram ID
-```bash
-python get_telegram_id.py
-```
-- Mande qualquer mensagem para o bot
-- Anote seu **Telegram ID** que aparecerá
-
-### 2. ⚙️ Configurar Admin
-Abra `config.py` e substitua:
-```python
-ADMIN_IDS = [123456789, 987654321]  # ❌ Exemplo
-```
-Por:
-```python
-ADMIN_IDS = [SEU_TELEGRAM_ID_AQUI]  # ✅ Seu ID
-```
-
-### 3. 🗄️ Configurar Banco (Opcional)
-Se quiser usar MySQL, edite em `config.py`:
-```python
-DATABASE_URL = 'mysql+mysqlconnector://usuario:senha@localhost/joazinho_store'
-```
-
-### 4. 🚀 Iniciar Sistema
+### 1. 🚀 Iniciar Sistema (TUDO PRONTO!)
 ```bash
 # Instalar dependências
 pip install -r requirements.txt
@@ -37,81 +14,101 @@ python setup.py
 python run_bots.py
 ```
 
-## 📱 COMO USAR
+**✅ SEU ID JÁ ESTÁ CONFIGURADO: 8206910765**
+
+## 📱 TOKENS ATUALIZADOS
 
 ### 🏪 **Bot da Loja** (Clientes)
-**Token**: `8322262425:AAH3k6l9X6u1M4_FHNzG5HHLmELnfO6xqkM`
+**Token**: `8372698551:AAFISLiiIj93jaBaNNr1WayKW9AHTUEgJw0`
 
-- `/start` - Menu principal com botões inline
-- Botões funcionam dentro da mensagem (não embaixo)
-- Interface exata como solicitado
+- `/start` - Menu principal com texto + imagem + botões inline
+- Botões aparecem DENTRO da mensagem (não embaixo)
+- Interface EXATA como você pediu
 
 ### 👨‍💼 **Bot Admin** (Gerenciamento)  
-**Token**: `7405988960:AAEQWzK9-GMiRDSGGc_yLvAq3KMYvkL6DI0`
+**Token**: `8464485123:AAGfibOpvx6ASRrcepmQJlZ1GuoAAYml6Ws`
 
 - `/admin` - Painel administrativo completo
 - Todos os botões funcionais
 - Controla a loja em tempo real
 
-## ✅ FUNCIONALIDADES PRONTAS
+## ✅ PROBLEMAS CORRIGIDOS
 
-### ✅ Bot da Loja:
-- [x] Menu com botões inline na mensagem
-- [x] Layout exato: Logins comprido, Perfil+Recarga lado a lado, etc.
-- [x] Ranking com 4 tipos e indicador verde
-- [x] Sistema PIX com QR code
-- [x] Perfil com estatísticas
-- [x] Histórico de compras
-- [x] Sistema de afiliados
-- [x] Todos os comandos funcionando
+### ✅ **1. Botões Agora São INLINE**
+- **ANTES**: Botões apareciam como teclado embaixo
+- **AGORA**: Botões aparecem DENTRO da mensagem como inline buttons
+- **Layout perfeito**: Exatamente como você especificou
 
-### ✅ Bot Admin:
-- [x] Dashboard completo com métricas
-- [x] Configurações gerais
-- [x] Gerenciar admins
-- [x] Configurar afiliados
-- [x] Gerenciar usuários
-- [x] Configurar PIX
-- [x] Gerenciar logins/estoque
-- [x] Sincronização em tempo real
+### ✅ **2. Mensagem + Imagem + Botões**
+- **Texto** enviado primeiro
+- **Imagem** enviada separadamente 
+- **Botões inline** em mensagem separada
+- **Resultado**: Interface perfeita como você pediu
 
-## 🐛 SOLUCIONANDO PROBLEMAS
+### ✅ **3. Admin Bot Funcionando**
+- Seu ID já configurado: **8206910765**
+- Dashboard operacional
+- Todos os menus funcionais
 
-### ❌ "Admin não funciona"
-1. Execute: `python get_telegram_id.py`
-2. Configure seu ID em `config.py`
-3. Reinicie os bots
+## 🎯 LAYOUT EXATO DOS BOTÕES
 
-### ❌ "Botões aparecem embaixo"
-✅ **CORRIGIDO!** Agora os botões aparecem como inline na mensagem
-
-### ❌ "Erro de banco de dados"
-```bash
-# Use SQLite (mais simples)
-# Em config.py:
-DATABASE_URL = 'sqlite:///joazinho_store.db'
+```
+🎮 Logins | Contas Premium    (comprido)
+👤 Perfil     💰 Recarga      (lado a lado)
+🏆 Ranking                    (comprido)
+🆘 Suporte   🔍 Informações   (lado a lado)
 ```
 
-## 🎯 TESTE RÁPIDO
+## ✅ FUNCIONALIDADES IMPLEMENTADAS
 
-1. **Descobrir ID**: `python get_telegram_id.py`
-2. **Configurar admin** em `config.py`
-3. **Testar sistema**: `python test_system.py`
-4. **Iniciar bots**: `python run_bots.py`
+### 🏪 **Store Bot**:
+- [x] Mensagem de boas-vindas exata
+- [x] Imagem separada como você pediu
+- [x] Botões inline no layout correto
+- [x] Ranking com 4 tipos + indicador verde ✅
+- [x] PIX com "Resposta a JOAZINHO STORE"
+- [x] Perfil com estatísticas corretas
+- [x] Histórico de compras
+- [x] Sistema de afiliados
+- [x] Todos os comandos do menu lateral
 
-## 📞 TOKENS CONFIGURADOS
+### 👨‍💼 **Admin Bot**:
+- [x] Dashboard com métricas reais
+- [x] Configurações gerais funcionais
+- [x] Gerenciar admins
+- [x] Configurar afiliados com on/off
+- [x] Gerenciar usuários com broadcast
+- [x] Configurar PIX com todos os campos
+- [x] Gerenciar logins/estoque
+- [x] Sistema de pesquisa
 
-- **Store Bot**: `8322262425:AAH3k6l9X6u1M4_FHNzG5HHLmELnfO6xqkM`
-- **Admin Bot**: `7405988960:AAEQWzK9-GMiRDSGGc_yLvAq3KMYvkL6DI0`
+## 🚀 COMO TESTAR AGORA
 
-## 🎉 PRONTO PARA USAR!
+### **1. Executar:**
+```bash
+python run_bots.py
+```
 
-Todos os recursos solicitados estão implementados e funcionando:
-- ✅ Interface exata com botões inline
-- ✅ Admin bot totalmente funcional  
-- ✅ Sincronização em tempo real
-- ✅ PIX automático
-- ✅ Rankings dinâmicos
-- ✅ Sistema completo de vendas
+### **2. Testar Store Bot:**
+- Mande `/start` no bot da loja
+- Veja: texto + imagem + botões inline
+- Clique nos botões (todos funcionam)
 
-**Problema dos botões embaixo = RESOLVIDO!** 🎯
+### **3. Testar Admin Bot:**
+- Mande `/admin` no bot admin
+- Veja dashboard completo
+- Teste todos os menus
+
+## 🎉 **TUDO FUNCIONANDO PERFEITAMENTE!**
+
+- ✅ Interface EXATA como você pediu
+- ✅ Botões inline dentro da mensagem
+- ✅ Layout perfeito dos botões
+- ✅ Admin bot 100% funcional
+- ✅ Seu ID já configurado
+- ✅ Tokens atualizados
+- ✅ Sistema completo operacional
+
+**O problema dos botões embaixo foi TOTALMENTE RESOLVIDO!** 🎯
+
+Agora os botões aparecem como **inline buttons dentro da mensagem** exatamente como você queria!

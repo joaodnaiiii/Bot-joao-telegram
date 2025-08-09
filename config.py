@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Bot Tokens
-ADMIN_BOT_TOKEN = "7405988960:AAEQWzK9-GMiRDSGGc_yLvAq3KMYvkL6DI0"
-STORE_BOT_TOKEN = "8322262425:AAH3k6l9X6u1M4_FHNzG5HHLmELnfO6xqkM"
+# Bot Tokens - UPDATED WITH NEW TOKENS
+ADMIN_BOT_TOKEN = "8464485123:AAGfibOpvx6ASRrcepmQJlZ1GuoAAYml6Ws"
+STORE_BOT_TOKEN = "8372698551:AAFISLiiIj93jaBaNNr1WayKW9AHTUEgJw0"
 
 # Store Configuration
 STORE_NAME = "JOAZINHO STORE"
@@ -14,7 +14,7 @@ SUPPORT_USERNAME = "@suporte_joaozinstore"
 CLIENT_GROUP_LINK = "https://t.me/your_client_group"  # Replace with actual link
 
 # Database Configuration
-DATABASE_URL = os.getenv('DATABASE_URL', 'mysql+mysqlconnector://root:password@localhost/joazinho_store')
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///joazinho_store.db')
 
 # Payment Configuration - PushinPay
 PUSHINPAY_TOKEN = os.getenv('PUSHINPAY_TOKEN', 'your_pushinpay_token')
@@ -23,8 +23,8 @@ MIN_RECHARGE = 2.00
 MAX_RECHARGE = 1000.00
 PIX_EXPIRY_MINUTES = 10
 
-# Admin Configuration - ADD YOUR TELEGRAM USER ID HERE
-ADMIN_IDS = [123456789, 987654321]  # Replace with actual admin user IDs
+# Admin Configuration - YOUR TELEGRAM ID
+ADMIN_IDS = [8206910765]  # Your actual Telegram ID
 
 ADMIN_DASHBOARD_EXPIRY = "26/11/2074"
 SOFTWARE_VERSION = "V4.1.0"

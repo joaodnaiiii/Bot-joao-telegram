@@ -43,8 +43,8 @@ def get_user_data(telegram_id):
         db.close()
 
 def create_main_keyboard():
-    """Create main menu inline keyboard"""
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    """Create main menu inline keyboard with exact layout"""
+    keyboard = types.InlineKeyboardMarkup()
     
     # First row - Logins | Contas Premium (full width)
     keyboard.add(types.InlineKeyboardButton("🎮 Logins | Contas Premium", callback_data="services"))
@@ -58,10 +58,10 @@ def create_main_keyboard():
     # Third row - Ranking (full width)
     keyboard.add(types.InlineKeyboardButton("🏆 Ranking", callback_data="ranking"))
     
-    # Fourth row - Suporte and Pesquisar Serviço (side by side)
+    # Fourth row - Suporte and Informações (side by side)
     keyboard.row(
         types.InlineKeyboardButton("🆘 Suporte", callback_data="support"),
-        types.InlineKeyboardButton("🔍 Pesquisar Serviço", callback_data="search")
+        types.InlineKeyboardButton("🔍 Informações", callback_data="search")
     )
     
     return keyboard
@@ -102,23 +102,27 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
 ├💸 Saldo Atual: R${user.balance:.2f}
 ├🪪 Usuário: {message.from_user.first_name or 'N/A'}"""
 
+    # Send text message first
+    bot.send_message(
+        message.chat.id,
+        welcome_text
+    )
+    
+    # Send image separately
     try:
-        # Send image with inline keyboard
         bot.send_photo(
             message.chat.id,
-            config.STORE_IMAGE_URL,
-            caption=welcome_text,
-            reply_markup=create_main_keyboard(),
-            parse_mode='HTML'
+            config.STORE_IMAGE_URL
         )
     except:
-        # If image fails, send text with inline keyboard
-        bot.send_message(
-            message.chat.id,
-            welcome_text,
-            reply_markup=create_main_keyboard(),
-            parse_mode='HTML'
-        )
+        pass  # If image fails, continue without it
+    
+    # Send buttons as separate message
+    bot.send_message(
+        message.chat.id,
+        "Escolha uma opção:",
+        reply_markup=create_main_keyboard()
+    )
 
 @bot.callback_query_handler(func=lambda call: call.data == "services")
 def show_services(call):
@@ -184,7 +188,7 @@ def process_purchase(call):
     user = get_user_data(call.from_user.id)
     
     if user.balance < product['price']:
-        # Show insufficient balance message (as alert, not sent message)
+        # Show insufficient balance message (as alert popup)
         bot.answer_callback_query(
             call.id,
             f"Saldo insuficiente! Faltam\nR${product['price'] - user.balance:.2f} faça uma recarga e tente novamente.\nSeu saldo: R$ {user.balance:.2f}",
@@ -329,7 +333,7 @@ def request_recharge_amount(call):
         call.message.message_id
     )
     
-    # Force reply for amount input
+    # Force reply for amount input with store name
     bot.send_message(
         call.message.chat.id,
         f"Resposta a {config.STORE_NAME}",
@@ -346,7 +350,7 @@ def process_recharge_amount(message):
         
         # Generate PIX payment
         user = get_user_data(message.from_user.id)
-        transaction_id = utils.generate_referral_code(user.id) + str(int(datetime.now().timestamp()))
+        transaction_id = utils.generate_referral_code(user.id) + str(int(datetime.now().timestamp()))[-4:]
         
         # Simulate PushinPay PIX generation
         pix_code = "00020101021226810014br.gov.bcb.pix2559qr.woovi.com/qr/v2/cob/04f784f1-e7e8-4b92-a31b-97d5dedd28dc520400005303986540529.005802BR5909PushinPay6009Sao_Paulo622905257d6eb598cf4d46abb05fbedd963040E64"
@@ -633,24 +637,16 @@ Importante: Não realizamos reembolsos em dinheiro. O suporte estará disponíve
 ℹ️ Seus Dados:
 ├🆔 ID: {user.telegram_id}
 ├💸 Saldo Atual: R${user.balance:.2f}
-├🪪 Usuário: {call.from_user.first_name or 'N/A'}"""
+├🪪 Usuário: {call.from_user.first_name or 'N/A'}
 
-    try:
-        bot.edit_message_caption(
-            welcome_text,
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=create_main_keyboard(),
-            parse_mode='HTML'
-        )
-    except:
-        bot.edit_message_text(
-            welcome_text,
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=create_main_keyboard(),
-            parse_mode='HTML'
-        )
+Escolha uma opção:"""
+
+    bot.edit_message_text(
+        welcome_text,
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=create_main_keyboard()
+    )
 
 # Command handlers for menu commands
 @bot.message_handler(commands=['pix'])
@@ -678,7 +674,7 @@ Exemplo:
 def process_pix_payment(message, amount):
     """Process PIX payment"""
     user = get_user_data(message.from_user.id)
-    transaction_id = utils.generate_referral_code(user.id) + str(int(datetime.now().timestamp()))
+    transaction_id = utils.generate_referral_code(user.id) + str(int(datetime.now().timestamp()))[-4:]
     
     pix_code = "00020101021226810014br.gov.bcb.pix2559qr.woovi.com/qr/v2/cob/04f784f1-e7e8-4b92-a31b-97d5dedd28dc520400005303986540529.005802BR5909PushinPay6009Sao_Paulo622905257d6eb598cf4d46abb05fbedd963040E64"
     
