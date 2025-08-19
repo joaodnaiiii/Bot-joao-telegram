@@ -1,25 +1,35 @@
-# JOAZINHO STORE - Bot de Vendas de Contas Premium
+# JOÃOZINHO STORE BOT (WhatsApp)
+
+Bot de vendas para WhatsApp com carteira, PIX (mock/placeholder Efí), assinaturas premium, extrato de compras, anti-flood e suporte.
 
 ## Requisitos
+- Node.js 18+
 
-- Python 3.x
-- Bibliotecas: `pyTelegramBotAPI`, `psycopg2`
-- Banco de dados: PostgreSQL (ou SQLite)
+## Configuração
+1. Copie `.env.example` para `.env` e ajuste as variáveis (opcionais):
+```
+cp .env.example .env
+```
+2. Instale dependências:
+```
+npm i
+```
 
-## Como rodar o bot
+## Executar
+```
+npm run dev
+```
+Escaneie o QR Code no terminal com o WhatsApp do bot.
 
-1. Faça o deploy no Railway (ou outro serviço de hospedagem).
-2. Defina as variáveis de ambiente:
-   - `DB_HOST` (host do seu banco de dados)
-   - `DB_NAME` (nome do seu banco de dados)
-   - `DB_USER` (usuário do banco)
-   - `DB_PASSWORD` (senha do banco)
-   - `TELEGRAM_TOKEN` (seu token do Telegram)
-3. Execute o bot com o comando:
-   ```bash
-   python bot.py
-   ```
+## Fluxos implementados
+- Menu principal: Adicionar Saldo, Assinaturas Premium, Área do Associado, Suporte
+- Adicionar Saldo: valores R$5, R$10, R$20 e valor personalizado
+- Geração de cobrança (PIX mock): QR code + código copia e cola, expiração em 30min, confirmação/manual via webhook mock
+- Assinaturas Premium: lista de 4 produtos, detalhe e compra com débito de saldo
+- Área do Associado: Minha conta, Minhas compras (gera texto), Resgatar saldo (converter bônus → saldo)
+- Suporte: mensagem com nome e número configurado
+- Anti-flood: bloqueio por 6s entre interações
 
-## Notas
-
-- Se for usar SQLite, altere a configuração do banco no `bot.py`.
+## Observações
+- O provedor de PIX é um mock local por padrão. Para usar Efí, implemente um provedor `efiProvider.js` lendo as variáveis do `.env` e integre em `src/index.js`.
+- Banco de dados: `better-sqlite3` em `/workspace/data.sqlite`.
