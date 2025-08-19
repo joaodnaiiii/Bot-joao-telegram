@@ -34,6 +34,20 @@ Bot de vendas para WhatsApp com menus interativos, recarga via PIX, compras de a
    ```
 4. Configure o webhook do WhatsApp para `https://SEU_HOST/webhook`.
 
+### Teste rápido com CallMeBot
+
+1. Copie `.env.example` para `.env` e ajuste `CALLMEBOT_APIKEY` se necessário.
+2. Envie uma mensagem teste:
+   ```bash
+   curl -X POST http://localhost:8000/send \
+     -H 'Content-Type: application/json' \
+     -d '{"to":"554498312326", "text":"This is a test"}'
+   ```
+3. Para enviar o menu de demonstração:
+   ```bash
+   curl -X POST 'http://localhost:8000/send/menu-demo?to=554498312326'
+   ```
+
 ## Fluxos implementados
 
 - Menu principal com botões:
