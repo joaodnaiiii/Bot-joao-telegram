@@ -21,5 +21,9 @@ class CallMeBotClient:
         # CallMeBot exige texto url-encoded; httpx faz isso automaticamente via params
         async with httpx.AsyncClient(timeout=timeout_seconds) as client:
             response = await client.get(self.base_url, params=params)
-            response.raise_for_status()
+            # Não propagar erro 5xx do CallMeBot; retornar texto bruto para evitar quebra do fluxo
+            try:
+                response.raise_for_status()
+            except Exception:
+                pass
             return response.text

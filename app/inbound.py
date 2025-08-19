@@ -52,9 +52,8 @@ async def receive_message(phone: str, text: str, db: Session = Depends(get_db)):
     if flood:
         remain = (flood.last_violation_at + timedelta(seconds=flood.penalty_seconds)) - now
         if remain.total_seconds() > 0:
-            msg = render_flood_block(int(remain.total_seconds()))
-            await callme_client.send_text(phone, msg)
-            return {"status": "blocked"}
+            # não enviar mensagem em caso de bloqueio para evitar 503 e loops
+            return {"status": "blocked", "retry_after": int(remain.total_seconds())}
 
         flood.penalty_seconds = min(flood.penalty_seconds + 6, 60)
         flood.last_violation_at = now
