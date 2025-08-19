@@ -1,1 +1,9 @@
 pyTelegramBotAPI==4.8.0
+sqlite3
+requests
+qrcode
+pillow
+datetime
+threading
+uuid
+json
