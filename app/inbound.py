@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from .db import SessionLocal
-from .models import FloodState, Product, Purchase
+from .models import FloodState, Product, Purchase, UserState
 from .flow import (
     ensure_user,
     get_products,
@@ -66,17 +66,41 @@ async def receive_message(phone: str, text: str, db: Session = Depends(get_db)):
     lower = text.strip().lower()
 
     # comandos básicos
-    if lower in {"menu", "inicio", "início", "start", "voltar"}:
+    if lower in {"menu", "inicio", "início", "start", "voltar", "0", "4"}:
         await callme_client.send_text(phone, MAIN_MENU.format(phone=phone, balance=user.balance))
+        # reset state
+        state = db.get(UserState, phone)
+        if not state:
+            state = UserState(phone=phone)
+            db.add(state)
+        state.context = "main"
+        state.data = ""
+        db.commit()
         return {"status": "ok"}
 
-    if lower.startswith("💸") or lower.startswith("adicionar saldo"):
+    # MAIN MENU numeric shortcuts
+    if lower in {"1", "adicionar saldo", "💸", "pix"}:
         await callme_client.send_text(phone, render_add_saldo_menu())
+        state = db.get(UserState, phone) or UserState(phone=phone)
+        state.context = "add_saldo"
+        state.data = ""
+        db.add(state)
+        db.commit()
         return {"status": "ok"}
 
-    if lower in {"pix r$ 5,00", "pix r$ 10,00", "pix r$ 20,00"} or lower.startswith("pix r$"):
+    # add saldo menu numeric buttons
+    if lower in {"pix r$ 5,00", "pix r$ 10,00", "pix r$ 20,00"} or lower.startswith("pix r$") or lower in {"1","2","3","4"}:
+        # map numeric options
+        if lower in {"1","2","3"}:
+            idx_map = {"1": 5.0, "2": 10.0, "3": 20.0}
+            amount = idx_map[lower]
+        elif lower == "4":
+            await callme_client.send_text(phone, "Envie: PIX R$ 12,34 (exemplo) para gerar o pagamento.")
+            return {"status": "ok"}
+        else:
+            amount = None
         value_map = {"pix r$ 5,00": 5.0, "pix r$ 10,00": 10.0, "pix r$ 20,00": 20.0}
-        amount = value_map.get(lower)
+        amount = amount or value_map.get(lower)
         if amount is None:
             # tentar parsear: pix r$ X,XX
             try:
@@ -94,17 +118,42 @@ async def receive_message(phone: str, text: str, db: Session = Depends(get_db)):
         await callme_client.send_text(phone, "Envie: PIX R$ 12,34 (exemplo) para gerar o pagamento.")
         return {"status": "ok"}
 
-    if lower.startswith("🛍️") or lower.startswith("assinaturas"):
+    if lower in {"2", "🛍️", "assinaturas"}:
         products = get_products(db)
         await callme_client.send_text(phone, render_products_list(products))
+        state = db.get(UserState, phone) or UserState(phone=phone)
+        state.context = "list_products"
+        state.data = ""
+        db.add(state)
+        db.commit()
         return {"status": "ok"}
 
-    if lower.isdigit():
-        pid = int(lower)
-        product = db.get(Product, pid)
-        if product:
-            await callme_client.send_text(phone, render_product_detail(user, product))
-            return {"status": "ok"}
+    # numeric selection depending on state
+    state = db.get(UserState, phone)
+    if lower.isdigit() and state:
+        if state.context == "list_products":
+            products = get_products(db)
+            try:
+                idx = int(lower) - 1
+                product = products[idx]
+            except Exception:
+                product = None
+            if product:
+                await callme_client.send_text(phone, render_product_detail(user, product))
+                state.context = f"product:{product.id}"
+                db.commit()
+                return {"status": "ok"}
+        elif state.context.startswith("product:"):
+            # 1) comprar  0) voltar
+            if lower == "1":
+                pid = int(state.context.split(":")[1])
+                # fall-through to buy command
+                lower = f"comprar {pid}"
+            elif lower == "0":
+                await callme_client.send_text(phone, render_products_list(get_products(db)))
+                state.context = "list_products"
+                db.commit()
+                return {"status": "ok"}
 
     if lower.startswith("comprar "):
         try:

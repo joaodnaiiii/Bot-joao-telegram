@@ -11,11 +11,11 @@ MAIN_MENU = (
     "🤖 JOÃOZINHO STORE BOT\n\n"
     "ℹ️ Seus Dados:\n"
     "💠 Número: {phone}\n💸 Saldo Atual: R$ {balance:.2f}\n\n"
-    "Escolha uma opção:\n\n"
-    "💸 Adicionar Saldo\n"
-    "🛍️ Assinaturas Premium\n\n"
-    "💼 Area do Associado\n\n"
-    "🆘 Contato do Suporte"
+    "Escolha uma opção (responda o número):\n"
+    "1) 💸 Adicionar Saldo\n"
+    "2) 🛍️ Assinaturas Premium\n"
+    "3) 💼 Area do Associado\n"
+    "4) 🆘 Contato do Suporte"
 )
 
 
@@ -46,10 +46,10 @@ def get_products(db: Session) -> list[Product]:
 
 
 def render_products_list(products: list[Product]) -> str:
-    lines = ["🥇 Assinaturas Premium:\n"]
-    for p in products:
-        lines.append(f"[{p.id}] {p.name} - R$ {p.price:.2f} (Estoque: {p.stock})")
-    lines.append("\nResponda com o ID do produto para ver detalhes.")
+    lines = ["🥇 Assinaturas Premium (escolha o número):\n"]
+    for idx, p in enumerate(products, start=1):
+        lines.append(f"{idx}) {p.name} - R$ {p.price:.2f} (Estoque: {p.stock})")
+    lines.append("\nResponda o número para ver detalhes.")
     return "\n".join(lines)
 
 
@@ -74,18 +74,18 @@ def render_product_detail(user: User, product: Product) -> str:
         "Obs: Olhe atentamente a o texto da compra.\n\n"
         "♻️ Garantia: 30\n"
         "◎ ══════ ❈ ══════ ◎\n\n"
-        "Responda com COMPRAR <ID> para gerar o PIX."
+        "Responda 1) 🛒 Comprar  ou  0) ⬅️ Voltar"
     )
 
 
 def render_add_saldo_menu() -> str:
     return (
         "💸 MENU DE OPÇÃO DE PIX 💸\n\n"
-        "Escolha um dos valores disponíveis para recarregar sua conta ou selecione \"Digite outro valor\" para inserir um valor personalizado.\n\n"
-        "💠 PIX R$ 5,00\n"
-        "💠 PIX R$ 10,00\n"
-        "💠 PIX R$ 20,00\n"
-        "💠 DIGITE OUTRO VALOR"
+        "Escolha uma opção (responda o número):\n"
+        "1) 💠 PIX R$ 5,00\n"
+        "2) 💠 PIX R$ 10,00\n"
+        "3) 💠 PIX R$ 20,00\n"
+        "4) 💠 DIGITE OUTRO VALOR"
     )
 
 

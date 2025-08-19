@@ -69,3 +69,12 @@ class PixInvoice(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped[User] = relationship(back_populates="pix_invoices")
+
+
+class UserState(Base):
+    __tablename__ = "user_states"
+
+    phone: Mapped[str] = mapped_column(String(20), primary_key=True)
+    context: Mapped[str] = mapped_column(String(50), default="")
+    data: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
