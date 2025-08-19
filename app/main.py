@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field
 
 from .config import get_settings
 from .callmebot import CallMeBotClient
+from .db import init_db
+from .inbound import router as inbound_router
+from .pix_webhook import router as pix_router
 
 
 class SendMessageRequest(BaseModel):
@@ -52,3 +55,12 @@ async def send_menu_demo(to: str):
         return {"result": result}
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc))
+
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
+
+app.include_router(inbound_router, prefix="/inbound", tags=["inbound"])
+app.include_router(pix_router, prefix="/pix", tags=["pix"])
